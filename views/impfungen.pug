@@ -1,0 +1,40 @@
+extends layout
+
+block content
+    h1 Cov in Deutschland
+    div.topnav
+        a(href="/?bundesland=BY" class= bundesland === "BY" ? "active" : "inactive") Bayern
+        a(href="/?bundesland=NI" class= bundesland === "NI" ? "active" : "inactive") Niedersachsen
+        a(href="/?bundesland=SN" class= bundesland === "SN" ? "active" : "inactive") Sachsen
+        a(href="/?bundesland=II" class= bundesland === "II" ? "active" : "inactive") Impfungen
+    p=lastUpdate
+    if chosenFact
+        div.card
+            div.container
+                h2=chosenFact.area
+                    div.pancakeContainer
+                        div.pancake
+                            h1.condense=chosenFact.impfGesamt
+                            td(align='center') Impfungen
+                        div.pancake
+                            h1.condense=chosenFact.impfPercent+"% (+"+chosenFact.impfChangePercent+"%)"
+                            td(align='center') Anteil
+                        div.pancake
+                            h1.condense 0
+                            td(align='center') Tote
+    br
+    table
+        thead
+            tr
+                th.border Bundesland
+                th.border Gesamt
+                th.border Neue
+                th.border Anteil
+        each fact in facts
+            tr
+                td.border=fact.area
+                td.border=fact.impfGesamt
+                td.border=fact.impfChange
+                td.border=fact.impfPercent+"%"
+    br
+    div="Alle Daten nach " + source
