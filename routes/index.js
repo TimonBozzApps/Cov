@@ -32,6 +32,7 @@ router.get('/', async function(req, res, next) {
             .cookie('bundesland', bundesland, COOKIE_OPTIONS)
             .render('index', results);
     }).catch((error) => {
+        console.log(error);
         if (error.message === "Cookies")
             return res
                 .cookie('areaNI', "Gifhorn", COOKIE_OPTIONS)
@@ -60,7 +61,7 @@ async function getData(bundesland, area) {
         case "BY":
             return bayernData(area);
         case "SN":
-            return sachsenData(area);
+            return sachsenDataNew(area);
         default:
             throw new Error("Cookies");
     }
@@ -122,8 +123,7 @@ async function niedersachsenData(area) {
     };
 }
 async function bayernData(area) {
-    var casesResponse = await unirest.get('https://www.lgl.bayern.de/gesundheit/infektionsschutz' +
-        '/infektionskrankheiten_a_z/coronavirus/karte_coronavirus/index.htm');
+    var casesResponse = await unirest.get('https://www.lgl.bayern.de/gesundheit/infektionsschutz/infektionskrankheiten_a_z/coronavirus/karte_coronavirus/index.htm');
     var casesResponseBody = casesResponse.raw_body;
     var lastUpdate = casesResponseBody.split("<li><sup>4)</sup>")[1]
         .split(".</li>")[0].trim();
@@ -166,12 +166,62 @@ async function bayernData(area) {
         source: "Freistaat Bayern",
     };
 }
+async function sachsenDataNew(area){
+    var response = await unirest.get('https://www.coronavirus.sachsen.de/corona-statistics/rest/infectionOverview.jsp');
+    var data = JSON.parse(response.raw_body);
+    var dataList = [];
+    dataList.push(data['14730']);
+    dataList.push(data['14729']);
+    dataList.push(data['14713']);
+    dataList.push(data['14628']);
+    dataList.push(data['14627']);
+    dataList.push(data['14626']);
+    dataList.push(data['14625']);
+    dataList.push(data['14612']);
+    dataList.push(data['14524']);
+    dataList.push(data['14523']);
+    dataList.push(data['14522']);
+    dataList.push(data['14521']);
+    dataList.push(data['14511']);
+    dataList.push(data['14']);
+
+    var landkreise = [];
+    var facts = [];
+    var chosenFact;
+
+    dataList.forEach((dataFact, index) => {
+        var fact = {
+            area: dataFact.boundingArea,
+            totalCases: dataFact.totalInfections + " (+" + dataFact.infectionsDifferenceToYesterday+")",
+            totalIncidence: "N/A",
+            totalDeaths: dataFact.totalDeaths + "(+"+dataFact.deathsDifferenceToYesterday+")",
+            recentCases: dataFact.infectionsDifferenceToYesterday,
+            recentIncidence: dataFact.incidence,
+        }
+        landkreise.push(dataFact.boundingArea);
+        facts.push(fact);
+        if (area === dataFact.boundingArea)
+            chosenFact = fact;
+    });
+    if (chosenFact === undefined)
+        chosenFact = facts[0];
+
+    return {
+        bundesland: "SN",
+        facts: facts,
+        chosenFact: chosenFact,
+        lastUpdate: "",
+        ampelImage: "",
+        source: "Freistaat Sachsen",
+    };
+}
+
 async function sachsenData(area) {
     var casesResponse = await unirest.get('https://www.coronavirus.sachsen.de/infektionsfaelle-in-sachsen-4151.html');
     var casesResponseBody = casesResponse.raw_body;
     var lastUpdate = "Datenstand " + casesResponseBody.split("<p>Stand: ")[1]
         .split(" Uhr</p>")[0].replace(/,/g, "").replace("&nbsp;", "");
-    var tableOnly = casesResponseBody.split("<h3>Laborbestätigte Fälle in den Kreisfreien Städten und in den Landkreisen des Freistaates</h3>")[1]
+    var tableOnly = casesResponseBody.split("<h2>Laborbest&auml;tigte F&auml;lle in den Kreisfreien St&auml;dten und in den Landkreisen des Freistaates</h2>")[1]
         .split("<tbody>")[1]
         .split("<td class=\"xl71\" height=\"19\"><strong>Sachsen gesamt</strong></td>")[0]
         .replace(/<\/td>/g, "")
@@ -257,15 +307,17 @@ async function impfenData(){
     rowsSliced.forEach((row, index) => {
         var bundesland = row[1];
         var impfGesamt = row[3];
-        var impfChange = row[6];
+        var impfChange = row[7];
         var impfPercent = impfGesamt / citizens[index] * 100
         var impfChangePercent = impfChange / citizens[index] * 100
+        var impfZweit = row[9]
         var fact = {
             area: bundesland,
             impfGesamt: CommaFormatted(impfGesamt),
             impfChange: CommaFormatted(impfChange),
             impfPercent: String(+impfPercent.toFixed(2)).replace(".", ","),
             impfChangePercent: String(+impfChangePercent.toFixed(2)).replace(".", ","),
+            impfZweit: CommaFormatted(impfZweit)
         }
         impfData.push(fact);
     });

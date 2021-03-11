@@ -15,13 +15,13 @@ block content
                     div.pancakeContainer
                         div.pancake
                             h1.condense=chosenFact.impfGesamt
-                            td(align='center') Impfungen
+                            td(align='center') Erst-Impfungen
                         div.pancake
                             h1.condense=chosenFact.impfPercent+"% (+"+chosenFact.impfChangePercent+"%)"
                             td(align='center') Anteil
                         div.pancake
-                            h1.condense 0
-                            td(align='center') Tote
+                            h1.condense=chosenFact.impfZweit
+                            td(align='center') Zweit-Impfungen
     br
     table
         thead
@@ -38,3 +38,5 @@ block content
                 td.border=fact.impfPercent+"%"
     br
     div="Alle Daten nach " + source
+    br
+    a(href="https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Impfquotenmonitoring.xlsx;?__blob=publicationFile") Mehr gibt es hier! (.xlsx)
