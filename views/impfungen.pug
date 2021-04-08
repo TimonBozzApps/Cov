@@ -15,12 +15,12 @@ block content
                     div.pancakeContainer
                         div.pancake
                             h1.condense=chosenFact.impfGesamt
+                            td(align='center') Gesamt
+                        div.pancake
+                            h1.condense=chosenFact.impfPercent+"%"
                             td(align='center') Erst-Impfungen
                         div.pancake
-                            h1.condense=chosenFact.impfPercent+"% (+"+chosenFact.impfChangePercent+"%)"
-                            td(align='center') Anteil
-                        div.pancake
-                            h1.condense=chosenFact.impfZweit
+                            h1.condense=chosenFact.impfZweit+"%"
                             td(align='center') Zweit-Impfungen
     br
     table
@@ -28,14 +28,14 @@ block content
             tr
                 th.border Bundesland
                 th.border Gesamt
-                th.border Neue
-                th.border Anteil
+                th.border Erst-Impfungen
+                th.border Zweit-Impfungen
         each fact in facts
             tr
                 td.border=fact.area
                 td.border=fact.impfGesamt
-                td.border=fact.impfChange
                 td.border=fact.impfPercent+"%"
+                td.border=fact.impfZweit+"%"
     br
     div="Alle Daten nach " + source
     br

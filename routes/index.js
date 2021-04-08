@@ -302,22 +302,21 @@ async function impfenData(){
     var path = __dirname+"/"+date+".xlsx";
 
     var rows = await xlsxFile(path, { sheet: date });
-    var rowsSliced = rows.slice(3, 21);
+    var rowsSliced = rows.slice(4, 22);
     var impfData = [];
     rowsSliced.forEach((row, index) => {
         var bundesland = row[1];
-        var impfGesamt = row[3];
-        var impfChange = row[7];
-        var impfPercent = impfGesamt / citizens[index] * 100
-        var impfChangePercent = impfChange / citizens[index] * 100
-        var impfZweit = row[9]
+        var impfGesamt = row[2];
+        var impfPercent = Number(row[3]);
+        //var impfChangePercent = impfChange / citizens[index] * 100
+        var impfZweitPercent = Number(row[6]);
         var fact = {
             area: bundesland,
             impfGesamt: CommaFormatted(impfGesamt),
-            impfChange: CommaFormatted(impfChange),
+            //impfChange: impfChange,
             impfPercent: String(+impfPercent.toFixed(2)).replace(".", ","),
-            impfChangePercent: String(+impfChangePercent.toFixed(2)).replace(".", ","),
-            impfZweit: CommaFormatted(impfZweit)
+            //impfChangePercent: String(+impfChangePercent.toFixed(2)).replace(".", ","),
+            impfZweit: String(+impfZweitPercent.toFixed(2)).replace(".", ","),
         }
         impfData.push(fact);
     });
