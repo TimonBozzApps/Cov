@@ -306,17 +306,17 @@ async function impfenData(){
     var impfData = [];
     rowsSliced.forEach((row, index) => {
         var bundesland = row[1];
-        var impfGesamt = row[2];
-        var impfPercent = Number(row[3]);
+        var impfGesamt = row[3];
+        var impfPercent = Number(row[3]) / citizens[index] * 100;
         //var impfChangePercent = impfChange / citizens[index] * 100
-        var impfZweitPercent = Number(row[6]);
+        var impfZweit = Number(row[4]);
         var fact = {
             area: bundesland,
             impfGesamt: CommaFormatted(impfGesamt),
             //impfChange: impfChange,
             impfPercent: String(+impfPercent.toFixed(2)).replace(".", ","),
             //impfChangePercent: String(+impfChangePercent.toFixed(2)).replace(".", ","),
-            impfZweit: String(+impfZweitPercent.toFixed(2)).replace(".", ","),
+            impfZweit: CommaFormatted(impfZweit),
         }
         impfData.push(fact);
     });

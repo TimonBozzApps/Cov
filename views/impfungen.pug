@@ -15,28 +15,30 @@ block content
                     div.pancakeContainer
                         div.pancake
                             h1.condense=chosenFact.impfGesamt
-                            td(align='center') Gesamt
-                        div.pancake
-                            h1.condense=chosenFact.impfPercent+"%"
                             td(align='center') Erst-Impfungen
                         div.pancake
-                            h1.condense=chosenFact.impfZweit+"%"
+                            h1.condense=chosenFact.impfPercent+"%"
+                            td(align='center') Erst-Impfungen Anteil
+                        div.pancake
+                            h1.condense=chosenFact.impfZweit
                             td(align='center') Zweit-Impfungen
     br
     table
         thead
             tr
                 th.border Bundesland
-                th.border Gesamt
                 th.border Erst-Impfungen
+                th.border Anteil
                 th.border Zweit-Impfungen
         each fact in facts
             tr
                 td.border=fact.area
                 td.border=fact.impfGesamt
                 td.border=fact.impfPercent+"%"
-                td.border=fact.impfZweit+"%"
+                td.border=fact.impfZweit
     br
     div="Alle Daten nach " + source
     br
     a(href="https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Impfquotenmonitoring.xlsx;?__blob=publicationFile") Mehr gibt es hier! (.xlsx)
+    br
+    a(href="https://impfdashboard.de/") Und hier!
