@@ -35,8 +35,8 @@ router.get('/', async function(req, res, next) {
         console.log(error);
         if (error.message === "Cookies")
             return res
-                .cookie('areaNI', "Gifhorn", COOKIE_OPTIONS)
-                .cookie('bundesland', "NI", COOKIE_OPTIONS)
+                .cookie('areaALL', "LK Gifhorn", COOKIE_OPTIONS)
+                .cookie('bundesland', "ALL", COOKIE_OPTIONS)
                 .render('error', {
                     message: "Cookie-Fehler",
                     error: {
@@ -56,12 +56,8 @@ module.exports = router;
 
 async function getData(bundesland, area) {
     switch (bundesland) {
-        case "NI":
-            return niedersachsenData(area);
-        case "BY":
-            return bayernData(area);
-        case "SN":
-            return sachsenDataNew(area);
+        case "ALL":
+            return allDataNew(area);
         default:
             throw new Error("Cookies");
     }
@@ -215,7 +211,6 @@ async function sachsenDataNew(area){
         source: "Freistaat Sachsen",
     };
 }
-
 async function sachsenData(area) {
     var casesResponse = await unirest.get('https://www.coronavirus.sachsen.de/infektionsfaelle-in-sachsen-4151.html');
     var casesResponseBody = casesResponse.raw_body;
@@ -275,6 +270,70 @@ async function sachsenData(area) {
         ampelImage: imageLink,
         source: "Freistaat Sachsen",
     };
+}
+
+async function allDataNew(area){
+    var date = await getDataFileDate();
+    var path = __dirname+"/d"+date+".xlsx";
+
+    var rows = await xlsxFile(path, { sheet: date });
+    var timestampSliced = rows.slice(0, 1);
+    var timestamp = timestampSliced[0][0];
+    var rowsSliced = rows.slice(4, 417);
+
+    var landkreise = [];
+    var facts = [];
+    var chosenFact;
+
+    rowsSliced.forEach((row, index) => {
+        var landkreis = row[0].trim();
+        var fact = {
+            area: landkreis,
+            totalCases: "--",
+            totalIncidence: "--",
+            totalDeaths: "--",
+            recentCases: row[2].toFixed(0),
+            recentIncidence: row[3].toFixed(1),
+        }
+        landkreise.push(landkreis);
+        facts.push(fact);
+        if (area === landkreis)
+            chosenFact = fact;
+    });
+    if (chosenFact === undefined)
+        chosenFact = facts[0];
+
+    return {
+        bundesland: "ALL",
+        facts: facts,
+        chosenFact: chosenFact,
+        lastUpdate: timestamp,
+        ampelImage: /*imageLink*/ undefined,
+        source: "RKI",
+    };
+}
+async function getDataFileDate(){
+    var fileDate = dateFromDate(new Date());
+    var path = __dirname+"/d"+fileDate+".xlsx";
+    if (fs.existsSync(path)){
+        return fileDate;
+    }
+    //https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Impfquotenmonitoring.xlsx;?__blob=publicationFile
+    var impfungResponse = await
+        (unirest.get('https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Fallzahlen_Kum_Tab.xlsx?__blob=publicationFile').encoding(null));
+    const data = Buffer.from(impfungResponse.raw_body);
+
+    var tempPath = __dirname+"/temp.xlsx";
+    fs.writeFileSync(tempPath, data, 'binary');
+    var sheets = await xlsxFile(tempPath, { getSheets: true });
+
+    if (sheets[1].name !== fileDate){ //if the file is not today
+        fs.unlinkSync(tempPath); //remove that file
+        fileDate = sheets[1].name; //update date accordingly
+    }
+    path = __dirname+"/d"+fileDate+".xlsx";
+    fs.writeFileSync(path, data, 'binary');
+    return fileDate;
 }
 
 var citizens = [
